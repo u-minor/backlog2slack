@@ -1,0 +1,6 @@
+backlog:
+  apiKey: YOUR_BACKLOG_API_KEY
+  baseUrl: https://YOUR_BACKLOG_PROJECT.backlog.jp
+
+slack:
+  apiToken: YOUR_SLACK_API_TOKEN
