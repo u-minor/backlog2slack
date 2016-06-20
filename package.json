@@ -17,21 +17,21 @@
     "lodash": "^4.2.1",
     "q": "^1.4.1",
     "request": "^2.69.0",
-    "slack-node": "^0.1.7"
+    "slack-node": "^0.2.0"
   },
   "devDependencies": {
-    "aglex": "^0.2.0",
+    "aglex": "^1.0.0",
     "coffee-script": "^1.10.0",
     "gulp": "^3.9.0",
     "gulp-coffee": "^2.3.1",
-    "gulp-coffee-istanbul": "^0.8.1",
     "gulp-coffeelint": "^0.6.0",
-    "gulp-mocha": "^2.2.0",
+    "gulp-install": "^0.6.0",
+    "gulp-load-plugins": "^1.2.4",
     "gulp-rename": "^1.2.2",
     "gulp-util": "^3.0.7",
     "gulp-zip": "^3.1.0",
     "run-sequence": "^1.1.5",
-    "traceur": "0.0.102",
-    "yargs": "^3.32.0"
+    "traceur": "0.0.111",
+    "yargs": "^4.7.1"
   }
 }
