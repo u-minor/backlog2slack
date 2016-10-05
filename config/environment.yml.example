@@ -1,6 +1,10 @@
 backlog:
-  apiKey: YOUR_BACKLOG_API_KEY
-  baseUrl: https://YOUR_BACKLOG_PROJECT.backlog.jp
+  SERVICE1:
+    apiKey: YOUR_BACKLOG_API_KEY1
+    baseUrl: https://YOUR_BACKLOG_PROJECT1.backlog.jp
+  SERVICE2:
+    apiKey: YOUR_BACKLOG_API_KEY2
+    baseUrl: https://YOUR_BACKLOG_PROJECT2.backlog.jp
 
 slack:
   apiToken: YOUR_SLACK_API_TOKEN

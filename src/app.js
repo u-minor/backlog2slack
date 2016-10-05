@@ -32,7 +32,7 @@ const types = {
   20: 'プルリクエストにコメント'
 }
 
-app.use('/notify', (req, res, next) => {
+app.use('/:service/notify', (req, res, next) => {
   const bl = req.body
   const blKey = `${bl.project.projectKey}-${bl.content.key_id}`
 
@@ -43,7 +43,7 @@ app.use('/notify', (req, res, next) => {
     return
   }
 
-  Promise.all([fetchBacklogUsers(bl.project.projectKey), fetchSlackUsers()]).then(data => {
+  Promise.all([fetchBacklogUsers(req.params.service, bl.project.projectKey), fetchSlackUsers()]).then(data => {
     const users = []
     for (let notification of bl.notifications) {
       const blUser = _.find(data[0], {id: notification.user.id})
@@ -65,7 +65,7 @@ app.use('/notify', (req, res, next) => {
     }
 
     console.log(`Start message post to ${users.join(',')}`)
-    const message = generateChatMessage(bl)
+    const message = generateChatMessage(req.params.service, bl)
     postChatMessage(message, users)
       .then(data => res.json({message: 'OK'}), err => res.status(404).json(err))
   })
@@ -82,11 +82,11 @@ app.use((err, req, res, next) => {
 
 module.exports = app
 
-function fetchBacklogUsers (projectKey) {
+function fetchBacklogUsers (service, projectKey) {
   return request({
-    uri: `${config.backlog.baseUrl}/api/v2/projects/${projectKey}/users`,
+    uri: `${config.backlog[service].baseUrl}/api/v2/projects/${projectKey}/users`,
     qs: {
-      apiKey: config.backlog.apiKey
+      apiKey: config.backlog[service].apiKey
     },
     json: true
   })
@@ -105,7 +105,7 @@ function fetchSlackUsers () {
   })
 }
 
-function generateChatMessage (backlogMessage) {
+function generateChatMessage (service, backlogMessage) {
   const blKey = `${backlogMessage.project.projectKey}-${backlogMessage.content.key_id}`
   const fields = []
   if (backlogMessage.content.comment) {
@@ -120,7 +120,7 @@ function generateChatMessage (backlogMessage) {
     attachments: JSON.stringify([
       {
         fallback: `Backlog - ${types[backlogMessage.type]}: ${blKey} ${backlogMessage.content.summary}`,
-        text: `<${config.backlog.baseUrl}/view/${blKey}|${blKey}> ${backlogMessage.content.summary}`,
+        text: `<${config.backlog[service].baseUrl}/view/${blKey}|${blKey}> ${backlogMessage.content.summary}`,
         pretext: `Backlog - ${types[backlogMessage.type]}`,
         mrkdwn_in: ['pretext', 'text', 'fields'],
         fields: fields
