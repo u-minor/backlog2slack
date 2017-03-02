@@ -24,18 +24,37 @@ lambda:
 
 ## API Gateway configuration
 apiGateway:
-  name: backlog-slack
-  description: Backlog to Slack notification
-
-  ## Method template definitions for each httpMethod
-  methodDefinitions:
-    _DEFAULT_:
-      request:
-        type: Lambda
-      responses:
-        200: {}
-
-  ## API resources
-  resources:
-    /{service}/notify:
-      - POST
+  swagger: 2.0
+  info:
+    title: backlog-slack
+    description: Backlog to Slack notification
+  basePath: /prod
+  schemes:
+    - https
+  paths:
+    /{proxy+}:
+      x-amazon-apigateway-any-method:
+        produces:
+          - application/json
+        parameters:
+          - name: proxy
+            in: path
+            required: true
+            type: string
+        responses:
+          200:
+            description: 200 response
+            schema:
+              $ref: "#/definitions/Empty"
+        x-amazon-apigateway-integration:
+          httpMethod: POST
+          passthroughBehavior: when_no_match
+          responses:
+            default:
+              statusCode: 200
+          type: aws_proxy
+          uri: REPLACED_AUTOMATICALLY_WITH_YOUR_LAMBDA_INVOCATION_ARN
+  definitions:
+    Empty:
+      title: Empty Schema
+      type: object

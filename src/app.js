@@ -32,7 +32,14 @@ const types = {
   20: 'プルリクエストにコメント'
 }
 
-app.use('/:service/notify', (req, res, next) => {
+const statusColors = {
+  1: '#ED8077',
+  2: '#4488C5',
+  3: '#5EB5A6',
+  4: '#B0BE3C'
+}
+
+app.use('/:service/notify', (req, res) => {
   const bl = req.body
   const blKey = `${bl.project.projectKey}-${bl.content.key_id}`
 
@@ -43,14 +50,18 @@ app.use('/:service/notify', (req, res, next) => {
     return
   }
 
-  Promise.all([fetchBacklogUsers(req.params.service, bl.project.projectKey), fetchSlackUsers()]).then(data => {
+  Promise.all([
+    fetchSlackUsers(),
+    fetchBacklogUsers(req.params.service, bl.project.projectKey),
+    fetchBacklogIssue(req.params.service, `${bl.project.projectKey}-${bl.content.key_id}`)
+  ]).then(data => {
     const users = []
     for (let notification of bl.notifications) {
-      const blUser = _.find(data[0], {id: notification.user.id})
+      const blUser = _.find(data[1], {id: notification.user.id})
       if (!blUser) {
         continue
       }
-      const slUser = _.find(data[1].members, o => o.profile.email === blUser.mailAddress)
+      const slUser = _.find(data[0].members, o => o.profile.email === blUser.mailAddress)
       if (!slUser) {
         continue
       }
@@ -65,7 +76,7 @@ app.use('/:service/notify', (req, res, next) => {
     }
 
     console.log(`Start message post to ${users.join(',')}`)
-    const message = generateChatMessage(req.params.service, bl)
+    const message = generateChatMessage(req.params.service, bl, data[2])
     postChatMessage(message, users)
       .then(data => res.json({message: 'OK'}), err => res.status(404).json(err))
   })
@@ -75,12 +86,22 @@ app.use((req, res, next) =>
   res.status(404).json({error: 'Not Found'})
 )
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error(err.stack)
   res.status(500).json({error: 'Internal Server Error'})
 })
 
 module.exports = app
+
+function fetchBacklogIssue (service, issueKey) {
+  return request({
+    uri: `${config.backlog[service].baseUrl}/api/v2/issues/${issueKey}`,
+    qs: {
+      apiKey: config.backlog[service].apiKey
+    },
+    json: true
+  })
+}
 
 function fetchBacklogUsers (service, projectKey) {
   return request({
@@ -105,29 +126,54 @@ function fetchSlackUsers () {
   })
 }
 
-function generateChatMessage (service, backlogMessage) {
+function generateChatMessage (service, backlogMessage, backlogIssue) {
   const blKey = `${backlogMessage.project.projectKey}-${backlogMessage.content.key_id}`
   const fields = []
+
+  fields.push({
+    value: `*状態*: ${backlogIssue.status.name}`,
+    short: true
+  })
+
+  fields.push({
+    value: `*優先度*: ${backlogIssue.priority.name}`,
+    short: true
+  })
+
+  if (backlogIssue.assignee) {
+    fields.push({
+      value: `*担当者*: ${backlogIssue.assignee.name}`,
+      short: true
+    })
+  }
+
+  if (backlogIssue.updatedUser) {
+    fields.push({
+      value: `*更新者*: ${backlogIssue.updatedUser.name}`,
+      short: true
+    })
+  }
+
   if (backlogMessage.content.comment) {
     fields.push({
-      title: 'Comment',
+      title: 'コメント',
       value: backlogMessage.content.comment.content.replace('\n', ' '),
       short: false
     })
   }
-  const message = {
+  return {
     as_user: true,
     attachments: JSON.stringify([
       {
         fallback: `Backlog - ${types[backlogMessage.type]}: ${blKey} ${backlogMessage.content.summary}`,
-        text: `<${config.backlog[service].baseUrl}/view/${blKey}|${blKey}> ${backlogMessage.content.summary}`,
+        color: statusColors[backlogIssue.status.id],
         pretext: `Backlog - ${types[backlogMessage.type]}`,
+        text: `【${backlogIssue.issueType.name}】<${config.backlog[service].baseUrl}/view/${blKey}|${blKey}> ${backlogMessage.content.summary}`,
         mrkdwn_in: ['pretext', 'text', 'fields'],
         fields: fields
       }
     ])
   }
-  return message
 }
 
 function postChatMessage (message, users) {
