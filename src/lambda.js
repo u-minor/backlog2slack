@@ -1,7 +1,12 @@
-// lambda.js
 'use strict'
-const awsServerlessExpress = require('aws-serverless-express')
-const app = require('./app')
-const server = awsServerlessExpress.createServer(app)
+const api = require('./api')
+const response = require('./response')
 
-exports.handler = (event, context) => awsServerlessExpress.proxy(server, event, context)
+exports.handler = (event, context, callback) => {
+  if (event.requestContext) {
+    // call from API Gateway
+    return api(event, context, callback)
+  }
+
+  callback(null, response(400))
+}

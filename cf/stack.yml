@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'backlog2slack: Send Backlog notification to Slack'
+
+Parameters:
+  BacklogAPIKey:
+    Description: Backlog API key
+    Type: String
+
+  BacklogBaseUrl:
+    Description: Backlog base url
+    Type: String
+
+  LambdaS3Bucket:
+    Description: Lambda S3 bucket name
+    Type: String
+
+  LambdaS3Path:
+    Description: Lambda S3 path
+    Type: String
+
+  SlackAPIToken:
+    Description: Slack API token
+    Type: String
+
+Resources:
+  ProxyApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Description: 'backlog2slack: Send Backlog notification to Slack'
+      Name: !Sub ${AWS::StackName}-API
+
+  ProxyResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ProxyApi
+      ParentId: !GetAtt ProxyApi.RootResourceId
+      PathPart: '{proxy+}'
+
+  ProxyMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: ANY
+      RestApiId: !Ref ProxyApi
+      ResourceId: !Ref ProxyResource
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Arn}/invocations
+          - Arn: !GetAtt Lambda.Arn
+
+  Deployment:
+    DependsOn: ProxyMethod
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref ProxyApi
+      Description: My deployment
+      StageName: prod
+
+  Lambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref LambdaS3Bucket
+        S3Key: !Ref LambdaS3Path
+      Description: 'backlog2slack: Send Backlog notification to Slack'
+      Environment:
+        Variables:
+          BACKLOG_API_KEY: !Ref BacklogAPIKey
+          BACKLOG_BASE_URL: !Ref BacklogBaseUrl
+          SLACK_API_TOKEN: !Ref SlackAPIToken
+      Handler: lambda.handler
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: nodejs6.10
+      Timeout: 5
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: logs:*
+                Resource: arn:aws:logs:*:*:*
+
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt Lambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*
+
+Outputs:
+  RestAPIBase:
+    Description: Rest API base URL
+    Value: !Sub https://${ProxyApi}.execute-api.${AWS::Region}.amazonaws.com/prod

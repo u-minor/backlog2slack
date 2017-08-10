@@ -1,103 +1,102 @@
-# aglex-backlog-slack
+# backlog2slack
 
-バックログの通知を Slack DM で受け取るための API です。
+![image](image.jpg)
 
-Amazon API Gateway + AWS Lambda + Express で動作するため、ほとんどのケースにおいてコストゼロで運用できます。
+バックログの通知を Slack の Direct Message で受け取ります。
+チケットの通知先に指定されているユーザーに DM で届くので、自分と関係ないタスクに煩わされることがありません。
 
-> [API Gateway + Lambda を使って Backlog 通知を Slack で受け取る](http://qiita.com/u-minor/items/57e68dd183925b3e6897)
+> 通知対象となっている Backlog ユーザーのメールアドレスと Slack ユーザーのメールアドレスを照合して DM 先を抽出しているため、双方のツールで同じメールアドレスを設定してください。
+
+Amazon API Gateway + AWS Lambda で動作するため、ほとんどのケースにおいてコストゼロで運用できます。
+
 
 ## 必要なもの
 
-- node 4系 以上 + gulp
+- node 6系以上 + yarn
 - aws-cli (Web の Management Console で設定する場合は不要)
 - Backlog API Key
 - Slack API Token
 
-## Configure
+## Setup
 
-### AWS 周りの準備
+### パッケージの準備
 
-#### IAM Role の作成
+#### NPM Package のインストール
 
-Lambda を稼働させるための IAM Role を作成します。
-
-```
-aws iam create-role \
-  --role-name lambda-backlog-slack \
-  --assume-role-policy-document file://extra/AssumeRolePolicy.json
+```command-line
+yarn install
 ```
 
-#### IAM Role へのポリシー割当て
+#### Lambda zip パッケージの作成
 
-作成した Role に AWSLambdaExecute ポリシーをアタッチします。
-
-```
-aws iam attach-role-policy \
-  --role-name lambda-backlog-slack \
-  --policy-arn arn:aws:iam::aws:policy/AWSLambdaExecute
+```command-line
+yarn build
 ```
 
-### aglex の設定
+#### Lambda zip, stack template を S3 にアップロード
 
-[aglex](https://www.npmjs.com/package/aglex) 用の設定ファイルを作成します。
+> aws-cli を利用していますが、Management Console を用いてアップロードしてもOKです。
 
-```
-cp aglex.yml.example aglex-production.yml
-```
-
-AWS CLI のデフォルトの profile を使用していれば、特に変更は必要ありません。
-profile を複数利用している場合は、YAML 内の `config.profile` を修正してください。
-
-### Express App で利用する config の設定
-
-```
-cp config/environment.yml.example config/production.yml
+```command-line
+aws s3 cp dist/lambda.zip s3://bucket/path/to/lambda.zip
+aws s3 cp cf/stack.yml s3://bucket/path/to/stack.yml
 ```
 
-Backlog の API Key や Base URL、Slack の API Token の設定を行います。
+### CloudFormation Stack の構築
 
-## Install
+> aws-cli を利用していますが、Management Console を用いて構築しても OK です。
 
-### NPM Package のインストール
+#### cf/params.json の作成
 
-```
-npm install
-```
+cf/params.json.example を複製し、適切な値をセットしてください。 
 
-> gulp を未インストールの場合は、 `npm i -g gulp-cli` してください。
+- BacklogAPIKey: Backlog の API キーです。Backlog の「個人設定 - API」で API キーを発行してください。
+- BacklogBaseUrl: API アクセス用のベースURLです。 `https://[スペース名].backlog.jp` になります。
+- LambdaS3Bucket: lambda.zip を設置した S3 bucket 名です。
+- LambdaS3Path: LambdaS3Bucket で設定した bucket 内での lambda.zip のパスです。（先頭の / は不要です）
+- SlackAPIToken: Slack の API Token です。アプリを新規に作成するか、Hubot 等の適当なアプリの API Token を利用してください。
 
-### Lambda の登録
+#### Stack の作成
 
-```
-gulp updateLambda --env=production
-```
+作成した cf/params.json を指定して、stack を構築します。stack name は適宜変更してください。
 
-### Lambda への権限割当て
-
-```
-gulp addLambdaPermission --env=production
-```
-
-### API Gateway の登録
-
-```
-gulp updateApi --env=production
+```command-line
+aws cloudformation create-stack \
+  --stack-name backlog2slack \
+  --capabilities CAPABILITY_IAM \
+  --parameters file://cf/params.json \
+  --template-url https://bucket.s3-ap-northeast-1.amazonaws.com/path/to/stack.yml
 ```
 
-### API Gateway のデプロイ
+> 内部で Lambda 用の IAM Role を生成するため、実行アカウントに iam:CreateRole 権限が必要です。
 
-```
-gulp deployApi --env=production --stage=prod
-```
 
-## Backlog の設定
+### Backlog 側の設定
 
-stage 情報を以下のコマンドで取得
-
-```
-gulp listStages
+```command-line
+aws cloudformation describe-stacks \
+  --stack-name backlog2slack \
+  --output text \
+  --query 'Stacks[].Outputs[?OutputKey==`RestAPIBase`].OutputValue'
 ```
 
-Endpoint URL に `/[サービス名]/notify` を付加したものを Backlog の Webhook に登録してください。
+上記コマンドで取得した API Gateway のベース URL に `/notify` を付加したものを Backlog の Webhook に登録してください。
 
-> `[サービス名]` は config/production.yml で指定した `backlog.SERVICE1.apiKey` の `SERVICE1` に該当する部分です。
+
+## Lambda function 単体の更新方法
+
+Lambda コードを修正した場合は、S3 に Lambda コードをアップロードした上で、以下のように update-function-code を実行してください。
+
+> Lambda の function name は stack name から自動取得しています。
+
+```command-line
+aws s3 cp dist/lambda.zip s3://bucket/path/to/lambda.zip
+
+aws lambda update-function-code \
+  --function-name $(aws cloudformation describe-stack-resources \
+    --stack-name backlog2slack \
+    --output text \
+    --query 'StackResources[?ResourceType==`AWS::Lambda::Function`].PhysicalResourceId') \
+  --s3-bucket bucket \
+  --s3-key path/to/lambda.zip
+```

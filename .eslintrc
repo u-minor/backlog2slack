@@ -2,8 +2,5 @@
   "extends": "standard",
   "plugins": [
     "standard"
-  ],
-  "rules": {
-    "no-control-regex": 0
-  }
+  ]
 }
