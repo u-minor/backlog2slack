@@ -7,7 +7,7 @@ const response = require('./response')
 
 const slack = new Slack(process.env.SLACK_API_TOKEN)
 
-module.exports = (event, context, callback) => {
+module.exports = async (event, context, callback) => {
   if (event.path !== '/notify' || event.httpMethod !== 'POST') {
     return callback(null, response(400))
   }
@@ -24,41 +24,46 @@ module.exports = (event, context, callback) => {
     return callback(null, response(200, 'OK'))
   }
 
-  Promise.all([
+  const [slackUsers, backlogUsers] = await Promise.all([
     fetchSlackUsers(),
-    fetchBacklogUsers(backlog.project.projectKey),
-    fetchBacklogIssue(backlog.project.projectKey, backlog.content.key_id)
-  ]).then(([slackUsers, backlogUsers, backlogIssue]) => {
-    const users = []
-    for (const notification of backlog.notifications) {
-      // find backlog user
-      const backlogUser = _.find(backlogUsers, {id: notification.user.id})
-      if (!backlogUser) {
-        continue
-      }
-      // find slack user by slack user's email
-      const slackUser = _.find(slackUsers.members, o => o.profile.email === backlogUser.mailAddress)
-      if (!slackUser) {
-        continue
-      }
+    fetchBacklogUsers(backlog.project.projectKey)
+  ])
 
-      users.push(slackUser.name)
+  const users = []
+  for (const notification of backlog.notifications) {
+    // find backlog user
+    const backlogUser = _.find(backlogUsers, { id: notification.user.id })
+    if (!backlogUser) {
+      continue
+    }
+    // find slack user by slack user's email
+    const slackUser = _.find(slackUsers.members, o => o.profile.email === backlogUser.mailAddress)
+    if (!slackUser) {
+      continue
     }
 
-    if (users.length === 0) {
-      console.log('User not found.')
-      return callback(null, response(200, 'OK'))
-    }
+    users.push(slackUser.name)
+  }
 
-    console.log(`Start message post to ${users.join(',')}`)
-    const message = generateChatMessage(backlog, backlogIssue)
-    postChatMessage(message, users)
-      .then(data => callback(null, response(200, 'OK')), err => callback(null, response(500, err)))
-  })
+  if (users.length === 0) {
+    console.log('User not found.')
+    return callback(null, response(200, 'OK'))
+  }
+
+  const issue = await fetchBacklogIssue(backlog.project.projectKey, backlog.content.key_id)
+
+  console.log(`Start message post to ${users.join(',')}`)
+  const message = generateChatMessage(backlog, issue)
+  try {
+    await postChatMessage(message, users)
+    callback(null, response(200, 'OK'))
+  } catch (err) {
+    callback(null, response(500, err))
+  }
 }
 
 /**
- *
+ * fetch backlog issue
  * @param projectKey
  * @param issueKey
  */
@@ -72,7 +77,7 @@ const fetchBacklogIssue = (projectKey, issueKey) =>
   })
 
 /**
- *
+ * fetch backlog user list
  * @param projectKey
  */
 const fetchBacklogUsers = projectKey =>
@@ -85,7 +90,7 @@ const fetchBacklogUsers = projectKey =>
   })
 
 /**
- *
+ * fetch slack user list
  */
 const fetchSlackUsers = () =>
   new Promise((resolve, reject) => {
@@ -100,8 +105,7 @@ const fetchSlackUsers = () =>
   })
 
 /**
- *
- * @param service
+ * generate message payload for slack
  * @param backlogMessage
  * @param backlogIssue
  * @returns {{as_user: boolean, attachments}}
@@ -157,7 +161,7 @@ const generateChatMessage = (backlogMessage, backlogIssue) => {
 }
 
 /**
- *
+ * post message to slack
  * @param message
  * @param users
  * @returns {Promise.<*[]>}
@@ -165,7 +169,7 @@ const generateChatMessage = (backlogMessage, backlogIssue) => {
 const postChatMessage = (message, users) => {
   const promises = []
   for (const user of users) {
-    const payload = _.extend({}, message, {channel: `@${user}`})
+    const payload = _.extend({}, message, { channel: `@${user}` })
     console.log(payload)
     promises.push(new Promise((resolve, reject) => {
       slack.api('chat.postMessage', payload, (err, response) => {

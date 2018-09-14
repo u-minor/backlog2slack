@@ -10,23 +10,25 @@
   "author": "Minoru Nakata <minoru@sprocket.bz>",
   "license": "ISC",
   "dependencies": {
-    "lodash": "^4.17.4",
-    "request-promise-native": "^1.0.3",
+    "lodash": "^4.17.11",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5",
     "slack-node": "^0.2.0"
   },
   "devDependencies": {
-    "eslint": "^4.4.1",
-    "eslint-config-standard": "^10.2.1",
-    "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-node": "^5.1.1",
-    "eslint-plugin-promise": "^3.5.0",
-    "eslint-plugin-standard": "^3.0.1",
+    "dotenv": "^6.0.0",
+    "eslint": "^5.5.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
     "gulp": "^3.9.0",
-    "gulp-eslint": "^4.0.0",
+    "gulp-eslint": "^5.0.0",
     "gulp-load-plugins": "^1.5.0",
-    "gulp-yarn": "^1.0.0",
-    "gulp-zip": "^4.0.0",
-    "run-sequence": "^2.1.0",
-    "yargs": "^8.0.2"
+    "gulp-yarn": "^2.0.0",
+    "gulp-zip": "^4.2.0",
+    "run-sequence": "^2.2.1",
+    "yargs": "^12.0.2"
   }
 }
