@@ -88,15 +88,9 @@ Resources:
                 - lambda.amazonaws.com
             Action:
               - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
-      Policies:
-        - PolicyName: root
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action: logs:*
-                Resource: arn:aws:logs:*:*:*
 
   LambdaPermission:
     Type: AWS::Lambda::Permission
