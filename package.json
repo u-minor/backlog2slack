@@ -15,17 +15,17 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "request": "^2.88.0",
-    "request-promise-native": "^1.0.5",
-    "slack-node": "^0.2.0"
+    "request-promise-native": "^1.0.8",
+    "slack-node": "^0.1.8"
   },
   "devDependencies": {
-    "eslint": "^5.5.0",
-    "eslint-config-standard": "^12.0.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-node": "^7.0.1",
-    "eslint-plugin-promise": "^4.0.1",
-    "eslint-plugin-standard": "^4.0.0"
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1"
   }
 }
