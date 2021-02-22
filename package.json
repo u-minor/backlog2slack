@@ -10,7 +10,7 @@
   "author": "Minoru Nakata <minoru@sprocket.bz>",
   "license": "ISC",
   "dependencies": {
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
     "slack-node": "^0.2.0"
