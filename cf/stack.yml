@@ -74,7 +74,7 @@ Resources:
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: nodejs16.x
-      Timeout: 5
+      Timeout: 10
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
