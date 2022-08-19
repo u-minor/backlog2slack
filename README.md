@@ -12,7 +12,7 @@ Amazon API Gateway + AWS Lambda で動作するため、ほとんどのケース
 
 ## 必要なもの
 
-- node 6系以上 + yarn
+- node 12.x + npm 6.x
 - aws-cli (Web の Management Console で設定する場合は不要)
 - Backlog API Key
 - Slack API Token
@@ -24,13 +24,13 @@ Amazon API Gateway + AWS Lambda で動作するため、ほとんどのケース
 #### NPM Package のインストール
 
 ```command-line
-yarn install
+npm install
 ```
 
 #### Lambda zip パッケージの作成
 
 ```command-line
-yarn build
+npm run build
 ```
 
 #### Lambda zip, stack template を S3 にアップロード
@@ -48,7 +48,7 @@ aws s3 cp cf/stack.yml s3://bucket/path/to/stack.yml
 
 #### cf/params.json の作成
 
-cf/params.json.example を複製し、適切な値をセットしてください。 
+cf/params.json.example を複製し、適切な値をセットしてください。
 
 - BacklogAPIKey: Backlog の API キーです。Backlog の「個人設定 - API」で API キーを発行してください。
 - BacklogBaseUrl: API アクセス用のベースURLです。 `https://[スペース名].backlog.jp` になります。

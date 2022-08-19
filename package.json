@@ -3,32 +3,29 @@
   "version": "1.0.0",
   "private": true,
   "description": "Send Backlog notification to Slack",
-  "scripts": {
-    "build": "gulp build",
-    "test": "gulp test:ci"
-  },
   "author": "Minoru Nakata <minoru@sprocket.bz>",
   "license": "ISC",
+  "engines": {
+    "node": "12.x",
+    "npm": "6.x"
+  },
+  "scripts": {
+    "clean": "rm -rf build dist",
+    "build": "eslint src && mkdir -p build dist && cp -r package.json src/* build && pushd build && npm install --production && rm package*.json && zip -r ../dist/lambda.zip . > /dev/null && popd",
+    "lint": "eslint src"
+  },
   "dependencies": {
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "request": "^2.88.0",
-    "request-promise-native": "^1.0.5",
-    "slack-node": "^0.2.0"
+    "request-promise-native": "^1.0.8",
+    "slack-node": "^0.1.8"
   },
   "devDependencies": {
-    "dotenv": "^6.0.0",
-    "eslint": "^5.5.0",
-    "eslint-config-standard": "^12.0.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-node": "^7.0.1",
-    "eslint-plugin-promise": "^4.0.1",
-    "eslint-plugin-standard": "^4.0.0",
-    "gulp": "^3.9.0",
-    "gulp-eslint": "^5.0.0",
-    "gulp-load-plugins": "^1.5.0",
-    "gulp-yarn": "^2.0.0",
-    "gulp-zip": "^4.2.0",
-    "run-sequence": "^2.2.1",
-    "yargs": "^12.0.2"
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1"
   }
 }
