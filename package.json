@@ -11,7 +11,7 @@
   },
   "scripts": {
     "clean": "rm -rf build dist",
-    "build": "eslint src && mkdir -p build dist && cp -r package.json src/* build && pushd build && npm install --production && rm package*.json && zip -r ../dist/lambda.zip . > /dev/null && popd",
+    "build": "eslint src && mkdir -p build dist && cp -r package*.json src/* build && pushd build && npm install --production && rm package*.json && zip -r ../dist/lambda.zip . > /dev/null && popd",
     "lint": "eslint src"
   },
   "dependencies": {
