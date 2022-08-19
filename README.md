@@ -12,7 +12,7 @@ Amazon API Gateway + AWS Lambda で動作するため、ほとんどのケース
 
 ## 必要なもの
 
-- node 12.x + npm 6.x
+- node 16.x + npm 8.x
 - aws-cli (Web の Management Console で設定する場合は不要)
 - Backlog API Key
 - Slack API Token
