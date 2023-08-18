@@ -154,7 +154,7 @@ const generateChatMessage = (backlogMessage, backlogIssue) => {
         pretext: `Backlog - ${backlogConst.types[backlogMessage.type]}`,
         text: `【${backlogIssue.issueType.name}】<${process.env.BACKLOG_BASE_URL}/view/${backlogKey}|${backlogKey}> ${backlogMessage.content.summary}`,
         mrkdwn_in: ['pretext', 'text', 'fields'],
-        fields: fields
+        fields
       }
     ])
   }
