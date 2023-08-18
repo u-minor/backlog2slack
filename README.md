@@ -9,7 +9,6 @@
 
 Amazon API Gateway + AWS Lambda で動作するため、ほとんどのケースにおいてコストゼロで運用できます。
 
-
 ## 必要なもの
 
 - node 16.x + npm 8.x
@@ -70,7 +69,6 @@ aws cloudformation create-stack \
 
 > 内部で Lambda 用の IAM Role を生成するため、実行アカウントに iam:CreateRole 権限が必要です。
 
-
 ### Backlog 側の設定
 
 ```command-line
@@ -81,7 +79,6 @@ aws cloudformation describe-stacks \
 ```
 
 上記コマンドで取得した API Gateway のベース URL に `/notify` を付加したものを Backlog の Webhook に登録してください。
-
 
 ## Lambda function 単体の更新方法
 
