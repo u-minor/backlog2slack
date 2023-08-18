@@ -2,8 +2,5 @@
   "extends": "standard",
   "parserOptions": {
     "ecmaVersion": 8
-  },
-  "plugins": [
-    "standard"
-  ]
+  }
 }
