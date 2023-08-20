@@ -1,22 +1,50 @@
-'use strict';
-const _ = require('lodash');
-const Slack = require('slack-node');
-const request = require('request-promise-native');
-const backlogConst = require('./backlogConst');
-const response = require('./response');
+import { APIGatewayProxyEvent, Callback, Context } from 'aws-lambda';
+import _ from 'lodash';
+import request from 'request-promise-native';
+import Slack from 'slack-node';
+import backlogConst from './backlogConst';
+import response from './response';
+import { Entity } from 'backlog-js';
+
+interface SlackUsersList {
+  ok: boolean;
+  members: SlackUser[];
+  cache_ts: number;
+  response_metadata: {
+    next_cursor: string;
+  };
+}
+
+interface SlackUser {
+  name: string;
+  profile: {
+    email: string;
+  };
+}
+
+interface SlackField {
+  short?: boolean;
+  title?: string;
+  value?: string;
+}
 
 const slack = new Slack(process.env.SLACK_API_TOKEN);
 
-module.exports = async (event, context, callback) => {
+export default async (
+  event: APIGatewayProxyEvent,
+  context: Context,
+  callback: Callback,
+) => {
   if (event.path !== '/notify' || event.httpMethod !== 'POST') {
     return callback(null, response(400));
   }
 
-  const backlog = JSON.parse(event.body);
-  if (!backlog || !backlog.id) {
+  const maybeBacklog = JSON.parse(event.body ?? '');
+  if (!maybeBacklog || !maybeBacklog.id) {
     console.error('cannot parse body:', event.body);
     return callback(null, response(400));
   }
+  const backlog = maybeBacklog as Entity.Activity.Activity;
 
   console.log(`Start ${backlog.project.projectKey}-${backlog.content.key_id}`);
   if (backlog.notifications.length === 0) {
@@ -30,7 +58,7 @@ module.exports = async (event, context, callback) => {
   ]);
 
   const users = [];
-  for (const notification of backlog.notifications) {
+  for (const notification of backlog.notifications as Entity.CommentNotification.CommentNotification[]) {
     // find backlog user
     const backlogUser = _.find(backlogUsers, { id: notification.user.id });
     if (!backlogUser) {
@@ -64,16 +92,18 @@ module.exports = async (event, context, callback) => {
     await postChatMessage(message, users);
     callback(null, response(200, 'OK'));
   } catch (err) {
-    callback(null, response(500, err));
+    if (err instanceof Error) {
+      callback(null, response(500, err.message));
+    } else {
+      callback(null, response(500, 'Unknown error'));
+    }
   }
 };
 
-/**
- * fetch backlog issue
- * @param projectKey
- * @param issueKey
- */
-const fetchBacklogIssue = (projectKey, issueKey) =>
+const fetchBacklogIssue = (
+  projectKey: string,
+  issueKey: string,
+): Promise<Entity.Issue.Issue> =>
   request({
     uri: `${process.env.BACKLOG_BASE_URL}/api/v2/issues/${projectKey}-${issueKey}`,
     qs: {
@@ -82,11 +112,7 @@ const fetchBacklogIssue = (projectKey, issueKey) =>
     json: true,
   });
 
-/**
- * fetch backlog user list
- * @param projectKey
- */
-const fetchBacklogUsers = (projectKey) =>
+const fetchBacklogUsers = (projectKey: string) =>
   request({
     uri: `${process.env.BACKLOG_BASE_URL}/api/v2/projects/${projectKey}/users`,
     qs: {
@@ -95,10 +121,7 @@ const fetchBacklogUsers = (projectKey) =>
     json: true,
   });
 
-/**
- * fetch slack user list
- */
-const fetchSlackUsers = () =>
+const fetchSlackUsers = (): Promise<SlackUsersList> =>
   new Promise((resolve, reject) => {
     slack.api('users.list', (err, response) => {
       if (err) {
@@ -110,15 +133,12 @@ const fetchSlackUsers = () =>
     });
   });
 
-/**
- * generate message payload for slack
- * @param backlogMessage
- * @param backlogIssue
- * @returns {{as_user: boolean, attachments}}
- */
-const generateChatMessage = (backlogMessage, backlogIssue) => {
+const generateChatMessage = (
+  backlogMessage: Entity.Activity.Activity,
+  backlogIssue: Entity.Issue.Issue,
+) => {
   const backlogKey = `${backlogMessage.project.projectKey}-${backlogMessage.content.key_id}`;
-  const fields = [
+  const fields: SlackField[] = [
     {
       value: `*状態*: ${backlogIssue.status.name}`,
       short: true,
@@ -168,13 +188,7 @@ const generateChatMessage = (backlogMessage, backlogIssue) => {
   };
 };
 
-/**
- * post message to slack
- * @param message
- * @param users
- * @returns {Promise.<*[]>}
- */
-const postChatMessage = (message, users) => {
+const postChatMessage = (message: unknown, users: string[]) => {
   const promises = [];
   for (const user of users) {
     const payload = _.extend({}, message, { channel: `@${user}` });

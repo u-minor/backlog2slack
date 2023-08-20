@@ -1,5 +1,9 @@
-'use strict';
-module.exports = {
+interface BacklogConst {
+  types: { [key: number]: string };
+  statusColors: { [key: number]: string };
+}
+
+export default {
   types: {
     1: '課題の追加',
     2: '課題の更新',
@@ -29,4 +33,4 @@ module.exports = {
     3: '#5EB5A6',
     4: '#B0BE3C',
   },
-};
+} as BacklogConst;
