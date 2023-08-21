@@ -1,7 +1,7 @@
 import { App, MessageAttachment } from '@slack/bolt';
+import { ChatPostMessageArguments } from '@slack/web-api';
 import { APIGatewayProxyEvent, Callback, Context } from 'aws-lambda';
 import { Backlog, Entity } from 'backlog-js';
-import _ from 'lodash';
 import backlogConst from './backlogConst';
 import response from './response';
 
@@ -35,14 +35,15 @@ export default async (
   const users: string[] = [];
   for (const notification of backlog.notifications as Entity.CommentNotification.CommentNotification[]) {
     // find backlog user
-    const backlogUser = _.find(backlogUsers, { id: notification.user.id });
+    const backlogUser = backlogUsers.find(
+      (user) => user.id === notification.user.id,
+    );
     if (!backlogUser) {
       continue;
     }
     // find slack user by slack user's email
-    const slackUser = _.find(
-      slackUsers,
-      (o) => o.profile?.email === backlogUser.mailAddress,
+    const slackUser = slackUsers.find(
+      (user) => user.profile?.email === backlogUser.mailAddress,
     );
     if (!slackUser || !slackUser.name) {
       continue;
@@ -85,7 +86,7 @@ const fetchBacklogIssue = (
   });
 
   return backlog.getIssue(`${projectKey}-${issueKey}`);
-}
+};
 
 const fetchBacklogUsers = (projectKey: string) => {
   const backlog = new Backlog({
@@ -94,7 +95,7 @@ const fetchBacklogUsers = (projectKey: string) => {
   });
 
   return backlog.getProjectUsers(projectKey);
-}
+};
 
 const fetchSlackUsers = async () => {
   const app = new App({
@@ -108,7 +109,7 @@ const fetchSlackUsers = async () => {
 const generateChatMessage = (
   backlogMessage: Entity.Activity.Activity,
   backlogIssue: Entity.Issue.Issue,
-) => {
+): ChatPostMessageArguments => {
   const backlogKey = `${backlogMessage.project.projectKey}-${backlogMessage.content.key_id}`;
   const fields: MessageAttachment['fields'] = [
     {
@@ -149,7 +150,7 @@ const generateChatMessage = (
 
   return {
     as_user: true,
-    attachments: JSON.stringify([
+    attachments: [
       {
         fallback: `Backlog - ${
           backlogConst.types[backlogMessage.type]
@@ -160,18 +161,25 @@ const generateChatMessage = (
         mrkdwn_in: ['pretext', 'text', 'fields'],
         fields,
       },
-    ]),
+    ],
+    channel: '',
   };
 };
 
-const postChatMessage = (message: unknown, users: string[]) => {
+const postChatMessage = (
+  message: ChatPostMessageArguments,
+  users: string[],
+) => {
   const app = new App({
     token: process.env.SLACK_BOT_TOKEN,
     signingSecret: process.env.SLACK_SIGNING_SECRET,
   });
   const promises: Promise<unknown>[] = [];
   for (const user of users) {
-    const payload = _.extend({}, message, { channel: `@${user}` });
+    const payload: ChatPostMessageArguments = {
+      ...message,
+      channel: `@${user}`,
+    };
     console.log(payload);
     promises.push(app.client.chat.postMessage(payload));
   }
