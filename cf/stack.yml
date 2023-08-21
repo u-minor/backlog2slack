@@ -75,7 +75,7 @@ Resources:
           BACKLOG_HOST: !Ref BacklogHost
           SLACK_BOT_TOKEN: !Ref SlackBotToken
           SLACK_SIGNING_SECRET: !Ref SlackSigningSecret
-      Handler: lambda.handler
+      Handler: index.handler
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: nodejs18.x
