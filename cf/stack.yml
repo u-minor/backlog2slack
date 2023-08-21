@@ -6,8 +6,8 @@ Parameters:
     Description: Backlog API key
     Type: String
 
-  BacklogBaseUrl:
-    Description: Backlog base url
+  BacklogHost:
+    Description: Backlog host (e.g. xxx.backlog.jp, xxx.backlogtool.com)
     Type: String
 
   LambdaS3Bucket:
@@ -72,7 +72,7 @@ Resources:
       Environment:
         Variables:
           BACKLOG_API_KEY: !Ref BacklogAPIKey
-          BACKLOG_BASE_URL: !Ref BacklogBaseUrl
+          BACKLOG_HOST: !Ref BacklogHost
           SLACK_BOT_TOKEN: !Ref SlackBotToken
           SLACK_SIGNING_SECRET: !Ref SlackSigningSecret
       Handler: lambda.handler

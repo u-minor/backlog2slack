@@ -1,6 +1,6 @@
 import { App, MessageAttachment } from '@slack/bolt';
 import { APIGatewayProxyEvent, Callback, Context } from 'aws-lambda';
-import { Entity } from 'backlog-js';
+import { Backlog, Entity } from 'backlog-js';
 import _ from 'lodash';
 import backlogConst from './backlogConst';
 import response from './response';
@@ -78,17 +78,23 @@ export default async (
 const fetchBacklogIssue = (
   projectKey: string,
   issueKey: string,
-): Promise<Entity.Issue.Issue> =>
-  fetch(
-    `${process.env.BACKLOG_BASE_URL}/api/v2/issues/${projectKey}-${issueKey}?` +
-      new URLSearchParams({ apiKey: process.env.BACKLOG_API_KEY ?? '' }),
-  ).then((res) => res.json() as Promise<Entity.Issue.Issue>);
+): Promise<Entity.Issue.Issue> => {
+  const backlog = new Backlog({
+    host: process.env.BACKLOG_HOST ?? '',
+    apiKey: process.env.BACKLOG_API_KEY ?? '',
+  });
 
-const fetchBacklogUsers = (projectKey: string) =>
-  fetch(
-    `${process.env.BACKLOG_BASE_URL}/api/v2/projects/${projectKey}/users?` +
-      new URLSearchParams({ apiKey: process.env.BACKLOG_API_KEY ?? '' }),
-  ).then((res) => res.json() as Promise<Entity.User.User[]>);
+  return backlog.getIssue(`${projectKey}-${issueKey}`);
+}
+
+const fetchBacklogUsers = (projectKey: string) => {
+  const backlog = new Backlog({
+    host: process.env.BACKLOG_HOST ?? '',
+    apiKey: process.env.BACKLOG_API_KEY ?? '',
+  });
+
+  return backlog.getProjectUsers(projectKey);
+}
 
 const fetchSlackUsers = async () => {
   const app = new App({
@@ -150,7 +156,7 @@ const generateChatMessage = (
         }: ${backlogKey} ${backlogMessage.content.summary}`,
         color: backlogConst.statusColors[backlogIssue.status.id],
         pretext: `Backlog - ${backlogConst.types[backlogMessage.type]}`,
-        text: `【${backlogIssue.issueType.name}】<${process.env.BACKLOG_BASE_URL}/view/${backlogKey}|${backlogKey}> ${backlogMessage.content.summary}`,
+        text: `【${backlogIssue.issueType.name}】<https://${process.env.BACKLOG_HOST}/view/${backlogKey}|${backlogKey}> ${backlogMessage.content.summary}`,
         mrkdwn_in: ['pretext', 'text', 'fields'],
         fields,
       },
