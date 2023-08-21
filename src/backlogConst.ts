@@ -3,7 +3,7 @@ interface BacklogConst {
   statusColors: { [key: number]: string };
 }
 
-export default {
+export const backlogConst: BacklogConst = {
   types: {
     1: '課題の追加',
     2: '課題の更新',
@@ -33,4 +33,4 @@ export default {
     3: '#5EB5A6',
     4: '#B0BE3C',
   },
-} as BacklogConst;
+};

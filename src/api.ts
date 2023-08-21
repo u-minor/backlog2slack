@@ -2,10 +2,10 @@ import { App, MessageAttachment } from '@slack/bolt';
 import { ChatPostMessageArguments } from '@slack/web-api';
 import { APIGatewayProxyEvent, Callback, Context } from 'aws-lambda';
 import { Backlog, Entity } from 'backlog-js';
-import backlogConst from './backlogConst';
-import response from './response';
+import { backlogConst } from './backlogConst';
+import { response } from './response';
 
-export default async (
+export const api = async (
   event: APIGatewayProxyEvent,
   context: Context,
   callback: Callback,

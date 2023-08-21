@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, Callback, Context } from 'aws-lambda';
-import api from './api';
-import response from './response';
+import { api } from './api';
+import { response } from './response';
 
 export const handler = (
   event: APIGatewayProxyEvent,
