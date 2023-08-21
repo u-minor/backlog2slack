@@ -1,0 +1,160 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LambdaResource should generate valid IAM role resources 1`] = `
+{
+  "LambdaServiceRoleA8ED4D3B": {
+    "Properties": {
+      "AssumeRolePolicyDocument": {
+        "Statement": [
+          {
+            "Action": "sts:AssumeRole",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com",
+            },
+          },
+        ],
+        "Version": "2012-10-17",
+      },
+      "ManagedPolicyArns": [
+        {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+            ],
+          ],
+        },
+      ],
+    },
+    "Type": "AWS::IAM::Role",
+  },
+  "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB": {
+    "Properties": {
+      "AssumeRolePolicyDocument": {
+        "Statement": [
+          {
+            "Action": "sts:AssumeRole",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com",
+            },
+          },
+        ],
+        "Version": "2012-10-17",
+      },
+      "ManagedPolicyArns": [
+        {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+            ],
+          ],
+        },
+      ],
+    },
+    "Type": "AWS::IAM::Role",
+  },
+}
+`;
+
+exports[`LambdaResource should generate valid Lambda function resources 1`] = `
+{
+  "LambdaD247545B": {
+    "DependsOn": [
+      "LambdaServiceRoleA8ED4D3B",
+    ],
+    "Properties": {
+      "Code": {
+        "S3Bucket": {
+          "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+        },
+        "S3Key": "a0f15be15dfde9f6400b81aae8928f57aec93c6fa7815287d4172bf6f5dde433.zip",
+      },
+      "Description": "Send Backlog notification to Slack",
+      "Environment": {
+        "Variables": {
+          "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+          "BACKLOG_API_KEY": "TEST_BACKLOG_API_KEY",
+          "BACKLOG_HOST": "example.backlog.jp",
+          "SLACK_BOT_TOKEN": "TEST_SLACK_BOT_TOKEN",
+          "SLACK_SIGNING_SECRET": "TEST_SLACK_SIGNING_SECRET",
+        },
+      },
+      "FunctionName": "TestStack-Lambda",
+      "Handler": "index.handler",
+      "MemorySize": 128,
+      "Role": {
+        "Fn::GetAtt": [
+          "LambdaServiceRoleA8ED4D3B",
+          "Arn",
+        ],
+      },
+      "Runtime": "nodejs18.x",
+      "Timeout": 30,
+    },
+    "Type": "AWS::Lambda::Function",
+  },
+  "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A": {
+    "DependsOn": [
+      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
+      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB",
+    ],
+    "Properties": {
+      "Code": {
+        "S3Bucket": {
+          "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+        },
+        "S3Key": "5cc92ed0cea39e2b8de2dbc527dfb5980a3af9564bd1084d840b9787c7d0467e.zip",
+      },
+      "Handler": "index.handler",
+      "Role": {
+        "Fn::GetAtt": [
+          "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB",
+          "Arn",
+        ],
+      },
+      "Runtime": "nodejs18.x",
+    },
+    "Type": "AWS::Lambda::Function",
+  },
+}
+`;
+
+exports[`LambdaResource should generate valid Lambda function url resource 1`] = `
+{
+  "LambdaFunctionUrl47093E15": {
+    "Properties": {
+      "AuthType": "NONE",
+      "Cors": {
+        "AllowHeaders": [
+          "*",
+        ],
+        "AllowMethods": [
+          "*",
+        ],
+        "AllowOrigins": [
+          "*",
+        ],
+        "MaxAge": 300,
+      },
+      "TargetFunctionArn": {
+        "Fn::GetAtt": [
+          "LambdaD247545B",
+          "Arn",
+        ],
+      },
+    },
+    "Type": "AWS::Lambda::Url",
+  },
+}
+`;

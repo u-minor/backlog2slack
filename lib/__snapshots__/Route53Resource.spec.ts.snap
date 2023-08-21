@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Route53Resource should generate valid Route53 record set resources 1`] = `
+{
+  "ARecordE7B57761": {
+    "Properties": {
+      "AliasTarget": {
+        "DNSName": "foobarbaz.cloudfront.net.",
+        "HostedZoneId": "CLOUDFRONT_ZONE_ID",
+      },
+      "HostedZoneId": "MY_ZONE_ID",
+      "Name": "test.example.com.",
+      "Type": "A",
+    },
+    "Type": "AWS::Route53::RecordSet",
+  },
+  "AaaaRecord61D2056E": {
+    "Properties": {
+      "AliasTarget": {
+        "DNSName": "foobarbaz.cloudfront.net.",
+        "HostedZoneId": "CLOUDFRONT_ZONE_ID",
+      },
+      "HostedZoneId": "MY_ZONE_ID",
+      "Name": "test.example.com.",
+      "Type": "AAAA",
+    },
+    "Type": "AWS::Route53::RecordSet",
+  },
+}
+`;

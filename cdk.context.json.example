@@ -1,0 +1,8 @@
+{
+  "backlogApiKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "backlogHost": "xxxx.backlog.jp",
+  "domainName": "example.com",
+  "hostName": "backlog2slack",
+  "slackBotToken": "xoxb-xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx",
+  "slackSigningSecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+}

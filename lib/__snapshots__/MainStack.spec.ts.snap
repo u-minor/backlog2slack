@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Backlog2SlackStack should generate valid output 1`] = `
+{
+  "EndpointURL": {
+    "Description": "Endpoint URL of backlog2slack",
+    "Value": "https://test.example.com/",
+  },
+}
+`;

@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CloudFrontResource should generate valid Cloudfront distribution resource 1`] = `
+{
+  "Distribution830FAC52": {
+    "Properties": {
+      "DistributionConfig": {
+        "Aliases": [
+          "test.example.com",
+        ],
+        "Comment": "Distribution for backlog2slack",
+        "DefaultCacheBehavior": {
+          "AllowedMethods": [
+            "GET",
+            "HEAD",
+            "OPTIONS",
+            "PUT",
+            "PATCH",
+            "POST",
+            "DELETE",
+          ],
+          "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+          "Compress": true,
+          "OriginRequestPolicyId": "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf",
+          "ResponseHeadersPolicyId": "5cc3b908-e619-4b99-88e5-2cf7f45965bd",
+          "TargetOriginId": "TestStackDistributionOrigin1B0A090BF",
+          "ViewerProtocolPolicy": "https-only",
+        },
+        "Enabled": true,
+        "HttpVersion": "http2",
+        "IPV6Enabled": true,
+        "Origins": [
+          {
+            "CustomOriginConfig": {
+              "OriginProtocolPolicy": "https-only",
+              "OriginSSLProtocols": [
+                "TLSv1.2",
+              ],
+            },
+            "DomainName": "RANDOM_ID.lambda-url.YOUR_REGION.on.aws",
+            "Id": "TestStackDistributionOrigin1B0A090BF",
+          },
+        ],
+        "PriceClass": "PriceClass_200",
+        "ViewerCertificate": {
+          "AcmCertificateArn": "arn:aws:acm:us-east-1:1234567890:certificate/DUMMY_ID",
+          "MinimumProtocolVersion": "TLSv1.2_2021",
+          "SslSupportMethod": "sni-only",
+        },
+      },
+    },
+    "Type": "AWS::CloudFront::Distribution",
+  },
+}
+`;
