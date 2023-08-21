@@ -1,6 +1,5 @@
 import { APIGatewayProxyEvent, Callback, Context } from 'aws-lambda';
 import _ from 'lodash';
-import request from 'request-promise-native';
 import Slack from 'slack-node';
 import backlogConst from './backlogConst';
 import response from './response';
@@ -57,7 +56,7 @@ export default async (
     fetchBacklogUsers(backlog.project.projectKey),
   ]);
 
-  const users = [];
+  const users: string[] = [];
   for (const notification of backlog.notifications as Entity.CommentNotification.CommentNotification[]) {
     // find backlog user
     const backlogUser = _.find(backlogUsers, { id: notification.user.id });
@@ -104,22 +103,16 @@ const fetchBacklogIssue = (
   projectKey: string,
   issueKey: string,
 ): Promise<Entity.Issue.Issue> =>
-  request({
-    uri: `${process.env.BACKLOG_BASE_URL}/api/v2/issues/${projectKey}-${issueKey}`,
-    qs: {
-      apiKey: process.env.BACKLOG_API_KEY,
-    },
-    json: true,
-  });
+  fetch(
+    `${process.env.BACKLOG_BASE_URL}/api/v2/issues/${projectKey}-${issueKey}?` +
+      new URLSearchParams({ apiKey: process.env.BACKLOG_API_KEY ?? '' }),
+  ).then((res) => res.json() as Promise<Entity.Issue.Issue>);
 
 const fetchBacklogUsers = (projectKey: string) =>
-  request({
-    uri: `${process.env.BACKLOG_BASE_URL}/api/v2/projects/${projectKey}/users`,
-    qs: {
-      apiKey: process.env.BACKLOG_API_KEY,
-    },
-    json: true,
-  });
+  fetch(
+    `${process.env.BACKLOG_BASE_URL}/api/v2/projects/${projectKey}/users?` +
+      new URLSearchParams({ apiKey: process.env.BACKLOG_API_KEY ?? '' }),
+  ).then((res) => res.json() as Promise<Entity.User.User[]>);
 
 const fetchSlackUsers = (): Promise<SlackUsersList> =>
   new Promise((resolve, reject) => {
@@ -189,7 +182,7 @@ const generateChatMessage = (
 };
 
 const postChatMessage = (message: unknown, users: string[]) => {
-  const promises = [];
+  const promises: Promise<unknown>[] = [];
   for (const user of users) {
     const payload = _.extend({}, message, { channel: `@${user}` });
     console.log(payload);
