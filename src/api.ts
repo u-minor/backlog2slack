@@ -1,30 +1,29 @@
 import { App, MessageAttachment } from '@slack/bolt';
 import { ChatPostMessageArguments } from '@slack/web-api';
-import { APIGatewayProxyEvent, Callback, Context } from 'aws-lambda';
+import { APIGatewayProxyEventV2 } from 'aws-lambda';
 import { Backlog, Entity } from 'backlog-js';
 import { backlogConst } from './backlogConst';
 import { response } from './response';
 
-export const api = async (
-  event: APIGatewayProxyEvent,
-  context: Context,
-  callback: Callback,
-) => {
-  if (event.path !== '/notify' || event.httpMethod !== 'POST') {
-    return callback(null, response(400));
+export const api = async (event: APIGatewayProxyEventV2) => {
+  if (
+    event.requestContext.http.path !== '/' ||
+    event.requestContext.http.method !== 'POST'
+  ) {
+    return response(400, 'Invalid path or method');
   }
 
   const maybeBacklog = JSON.parse(event.body ?? '');
   if (!maybeBacklog || !maybeBacklog.id) {
     console.error('cannot parse body:', event.body);
-    return callback(null, response(400));
+    return response(400, 'Invalid body');
   }
   const backlog = maybeBacklog as Entity.Activity.Activity;
 
   console.log(`Start ${backlog.project.projectKey}-${backlog.content.key_id}`);
   if (backlog.notifications.length === 0) {
     console.log('Notification not found.');
-    return callback(null, response(200, 'OK'));
+    return response(200, 'OK');
   }
 
   const [slackUsers, backlogUsers] = await Promise.all([
@@ -54,7 +53,7 @@ export const api = async (
 
   if (users.length === 0) {
     console.log('User not found.');
-    return callback(null, response(200, 'OK'));
+    return response(200, 'OK');
   }
 
   const issue = await fetchBacklogIssue(
@@ -66,12 +65,13 @@ export const api = async (
   const message = generateChatMessage(backlog, issue);
   try {
     await postChatMessage(message, users);
-    callback(null, response(200, 'OK'));
+    return response(200, 'OK');
   } catch (err) {
     if (err instanceof Error) {
-      callback(null, response(500, err.message));
+      console.log(err.message);
+      return response(500, err.message);
     } else {
-      callback(null, response(500, 'Unknown error'));
+      return response(500, 'Unknown error');
     }
   }
 };

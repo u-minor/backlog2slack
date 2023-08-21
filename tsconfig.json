@@ -1,16 +1,24 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "esModuleInterop": true,
-    "isolatedModules": true,
+    "alwaysStrict": true,
+    "declaration": true,
+    "experimentalDecorators": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "module": "node16",
     "moduleResolution": "node",
-    "outDir": "./build",
-    "paths": {
-      "@/*": ["src/*"]
-    },
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "resolveJsonModule": true,
+    "skipLibCheck": true,
     "strict": true,
-    "target": "esnext"
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+    "target": "ES2022"
   },
   "include": ["src"]
 }

@@ -1,16 +1,13 @@
-import { APIGatewayProxyEvent, Callback, Context } from 'aws-lambda';
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { api } from './api';
 import { response } from './response';
 
-export const handler = (
-  event: APIGatewayProxyEvent,
-  context: Context,
-  callback: Callback,
-) => {
+export const handler = async (
+  event: APIGatewayProxyEventV2,
+): Promise<APIGatewayProxyResultV2> => {
   if (event.requestContext) {
-    // call from API Gateway
-    return api(event, context, callback);
+    return await api(event);
   }
 
-  callback(null, response(400));
+  return response(400, 'Invalid request');
 };
