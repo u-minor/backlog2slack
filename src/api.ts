@@ -1,33 +1,9 @@
+import { App, MessageAttachment } from '@slack/bolt';
 import { APIGatewayProxyEvent, Callback, Context } from 'aws-lambda';
+import { Entity } from 'backlog-js';
 import _ from 'lodash';
-import Slack from 'slack-node';
 import backlogConst from './backlogConst';
 import response from './response';
-import { Entity } from 'backlog-js';
-
-interface SlackUsersList {
-  ok: boolean;
-  members: SlackUser[];
-  cache_ts: number;
-  response_metadata: {
-    next_cursor: string;
-  };
-}
-
-interface SlackUser {
-  name: string;
-  profile: {
-    email: string;
-  };
-}
-
-interface SlackField {
-  short?: boolean;
-  title?: string;
-  value?: string;
-}
-
-const slack = new Slack(process.env.SLACK_API_TOKEN);
 
 export default async (
   event: APIGatewayProxyEvent,
@@ -65,10 +41,10 @@ export default async (
     }
     // find slack user by slack user's email
     const slackUser = _.find(
-      slackUsers.members,
-      (o) => o.profile.email === backlogUser.mailAddress,
+      slackUsers,
+      (o) => o.profile?.email === backlogUser.mailAddress,
     );
-    if (!slackUser) {
+    if (!slackUser || !slackUser.name) {
       continue;
     }
 
@@ -114,29 +90,28 @@ const fetchBacklogUsers = (projectKey: string) =>
       new URLSearchParams({ apiKey: process.env.BACKLOG_API_KEY ?? '' }),
   ).then((res) => res.json() as Promise<Entity.User.User[]>);
 
-const fetchSlackUsers = (): Promise<SlackUsersList> =>
-  new Promise((resolve, reject) => {
-    slack.api('users.list', (err, response) => {
-      if (err) {
-        console.error(err);
-        reject(err);
-      } else {
-        resolve(response);
-      }
-    });
+const fetchSlackUsers = async () => {
+  const app = new App({
+    token: process.env.SLACK_BOT_TOKEN,
+    signingSecret: process.env.SLACK_SIGNING_SECRET,
   });
+  const ret = await app.client.users.list();
+  return ret.members ?? [];
+};
 
 const generateChatMessage = (
   backlogMessage: Entity.Activity.Activity,
   backlogIssue: Entity.Issue.Issue,
 ) => {
   const backlogKey = `${backlogMessage.project.projectKey}-${backlogMessage.content.key_id}`;
-  const fields: SlackField[] = [
+  const fields: MessageAttachment['fields'] = [
     {
+      title: '',
       value: `*状態*: ${backlogIssue.status.name}`,
       short: true,
     },
     {
+      title: '',
       value: `*優先度*: ${backlogIssue.priority.name}`,
       short: true,
     },
@@ -144,6 +119,7 @@ const generateChatMessage = (
 
   if (backlogIssue.assignee) {
     fields.push({
+      title: '',
       value: `*担当者*: ${backlogIssue.assignee.name}`,
       short: true,
     });
@@ -151,6 +127,7 @@ const generateChatMessage = (
 
   if (backlogIssue.updatedUser) {
     fields.push({
+      title: '',
       value: `*更新者*: ${backlogIssue.updatedUser.name}`,
       short: true,
     });
@@ -182,22 +159,15 @@ const generateChatMessage = (
 };
 
 const postChatMessage = (message: unknown, users: string[]) => {
+  const app = new App({
+    token: process.env.SLACK_BOT_TOKEN,
+    signingSecret: process.env.SLACK_SIGNING_SECRET,
+  });
   const promises: Promise<unknown>[] = [];
   for (const user of users) {
     const payload = _.extend({}, message, { channel: `@${user}` });
     console.log(payload);
-    promises.push(
-      new Promise((resolve, reject) => {
-        slack.api('chat.postMessage', payload, (err, response) => {
-          if (err) {
-            console.error(err);
-            reject(err);
-          } else {
-            resolve(response);
-          }
-        });
-      }),
-    );
+    promises.push(app.client.chat.postMessage(payload));
   }
   return Promise.all(promises);
 };

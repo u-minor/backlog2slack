@@ -19,13 +19,12 @@
     "tsc": "tsc --noEmit"
   },
   "dependencies": {
-    "lodash": "^4.17.15",
-    "slack-node": "^0.1.8"
+    "@slack/bolt": "3.13.3",
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.119",
     "@types/lodash": "4.14.197",
-    "@types/slack-node": "0.1.4",
     "@typescript-eslint/eslint-plugin": "6.4.0",
     "@typescript-eslint/parser": "6.4.0",
     "backlog-js": "0.13.1",

@@ -18,8 +18,12 @@ Parameters:
     Description: Lambda S3 path
     Type: String
 
-  SlackAPIToken:
-    Description: Slack API token
+  SlackBotToken:
+    Description: Slack bot token
+    Type: String
+
+  SlackSigningSecret:
+    Description: Slack signing secret
     Type: String
 
 Resources:
@@ -69,11 +73,12 @@ Resources:
         Variables:
           BACKLOG_API_KEY: !Ref BacklogAPIKey
           BACKLOG_BASE_URL: !Ref BacklogBaseUrl
-          SLACK_API_TOKEN: !Ref SlackAPIToken
+          SLACK_BOT_TOKEN: !Ref SlackBotToken
+          SLACK_SIGNING_SECRET: !Ref SlackSigningSecret
       Handler: lambda.handler
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Timeout: 10
 
   LambdaExecutionRole:
