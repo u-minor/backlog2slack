@@ -22,7 +22,7 @@
     "backlog-js": "0.13.1"
   },
   "devDependencies": {
-    "@types/aws-lambda": "8.10.124",
+    "@types/aws-lambda": "8.10.125",
     "@types/jest": "29.5.5",
     "@typescript-eslint/eslint-plugin": "6.8.0",
     "@typescript-eslint/parser": "6.8.0",
