@@ -78,7 +78,7 @@ exports[`LambdaResource should generate valid Lambda function resources 1`] = `
         "S3Bucket": {
           "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
         },
-        "S3Key": "0fa7714f2ba4e0ee9b5200dc367092694b5e7dd7693b4e0dbc79c956705da573.zip",
+        "S3Key": "419d11c84608d86b57fd372a92c7da56bbf630c4e14c25d2fd595dbad7ca6cff.zip",
       },
       "Description": "Send Backlog notification to Slack",
       "Environment": {

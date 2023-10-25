@@ -9,5 +9,5 @@ export const handler = async (
     return await api(event);
   }
 
-  return response(400, 'Invalid request');
+  return response(400);
 };

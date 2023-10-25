@@ -23,7 +23,7 @@ export const api = async (event: APIGatewayProxyEventV2) => {
   console.log(`Start ${backlog.project.projectKey}-${backlog.content.key_id}`);
   if (backlog.notifications.length === 0) {
     console.log('Notification not found.');
-    return response(200, 'OK');
+    return response(200);
   }
 
   const [slackUsers, backlogUsers] = await Promise.all([
@@ -53,7 +53,7 @@ export const api = async (event: APIGatewayProxyEventV2) => {
 
   if (users.length === 0) {
     console.log('User not found.');
-    return response(200, 'OK');
+    return response(200);
   }
 
   const issue = await fetchBacklogIssue(
@@ -65,13 +65,13 @@ export const api = async (event: APIGatewayProxyEventV2) => {
   const message = generateChatMessage(backlog, issue);
   try {
     await postChatMessage(message, users);
-    return response(200, 'OK');
+    return response(200);
   } catch (err) {
     if (err instanceof Error) {
       console.log(err.message);
       return response(500, err.message);
     } else {
-      return response(500, 'Unknown error');
+      return response(500);
     }
   }
 };
