@@ -18,7 +18,7 @@
     "tsc": "tsc --noEmit"
   },
   "dependencies": {
-    "@slack/bolt": "3.13.3",
+    "@slack/bolt": "3.14.0",
     "backlog-js": "0.13.1"
   },
   "devDependencies": {
