@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DynamoDBResource should generate valid DynamoDB table resource 1`] = `
+{
+  "CacheTableC1E6DF7E": {
+    "DeletionPolicy": "Retain",
+    "Properties": {
+      "AttributeDefinitions": [
+        {
+          "AttributeName": "key",
+          "AttributeType": "S",
+        },
+      ],
+      "BillingMode": "PAY_PER_REQUEST",
+      "KeySchema": [
+        {
+          "AttributeName": "key",
+          "KeyType": "HASH",
+        },
+      ],
+      "TimeToLiveSpecification": {
+        "AttributeName": "ttl",
+        "Enabled": true,
+      },
+    },
+    "Type": "AWS::DynamoDB::Table",
+    "UpdateReplacePolicy": "Retain",
+  },
+}
+`;

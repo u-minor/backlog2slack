@@ -78,7 +78,7 @@ exports[`LambdaResource should generate valid Lambda function resources 1`] = `
         "S3Bucket": {
           "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
         },
-        "S3Key": "30f6b9f02b4bebda757287df156a2b61cdb4a5fffae76a2314263f085889aeaf.zip",
+        "S3Key": "3493d32c186a25e591ec0dd948b2c0e8c81644dcc0cc572522fd16a454fa8808.zip",
       },
       "Description": "Send Backlog notification to Slack",
       "Environment": {
@@ -86,13 +86,17 @@ exports[`LambdaResource should generate valid Lambda function resources 1`] = `
           "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
           "BACKLOG_API_KEY": "TEST_BACKLOG_API_KEY",
           "BACKLOG_HOST": "example.backlog.jp",
+          "CACHE_TTL": "300",
+          "DYNAMODB_TABLE_NAME": {
+            "Ref": "TestCacheTable218CBCA3",
+          },
           "SLACK_BOT_TOKEN": "TEST_SLACK_BOT_TOKEN",
           "SLACK_SIGNING_SECRET": "TEST_SLACK_SIGNING_SECRET",
         },
       },
       "FunctionName": "TestStack-Lambda",
       "Handler": "index.handler",
-      "MemorySize": 128,
+      "MemorySize": 256,
       "Role": {
         "Fn::GetAtt": [
           "LambdaServiceRoleA8ED4D3B",
