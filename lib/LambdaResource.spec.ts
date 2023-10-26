@@ -1,5 +1,6 @@
 import { App, Stack } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
+import { AttributeType, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { LambdaResource } from './LambdaResource';
 
 describe('LambdaResource', () => {
@@ -8,12 +9,16 @@ describe('LambdaResource', () => {
   beforeAll(() => {
     const app = new App();
     const stack = new Stack(app, 'TestStack');
+    const table = new Table(stack, 'TestCacheTable', {
+      partitionKey: { name: 'key', type: AttributeType.STRING },
+    });
 
     new LambdaResource(stack, {
       backlog: {
         apiKey: 'TEST_BACKLOG_API_KEY',
         host: 'example.backlog.jp',
       },
+      dynamoDB: { table },
       slack: {
         botToken: 'TEST_SLACK_BOT_TOKEN',
         signingSecret: 'TEST_SLACK_SIGNING_SECRET',

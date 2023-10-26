@@ -1,4 +1,6 @@
 import { Duration, Stack } from 'aws-cdk-lib';
+import { Table } from 'aws-cdk-lib/aws-dynamodb';
+import { Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import {
   FunctionUrl,
   FunctionUrlAuthType,
@@ -10,6 +12,9 @@ export interface LambdaResourceProps {
   backlog: {
     apiKey: string;
     host: string;
+  };
+  dynamoDB: {
+    table: Table;
   };
   slack: {
     botToken: string;
@@ -28,13 +33,15 @@ export class LambdaResource {
       environment: {
         BACKLOG_API_KEY: props.backlog.apiKey,
         BACKLOG_HOST: props.backlog.host,
+        CACHE_TTL: '300',
+        DYNAMODB_TABLE_NAME: props.dynamoDB.table.tableName,
         SLACK_BOT_TOKEN: props.slack.botToken,
         SLACK_SIGNING_SECRET: props.slack.signingSecret,
       },
       functionName: `${stack.stackName}-Lambda`,
       handler: 'handler',
       logRetention: 7,
-      memorySize: 128,
+      memorySize: 256,
       runtime: Runtime.NODEJS_18_X,
       timeout: Duration.seconds(30),
     });
@@ -47,5 +54,21 @@ export class LambdaResource {
         maxAge: Duration.seconds(300),
       },
     });
+
+    this.nodejsFunction.role?.attachInlinePolicy(
+      new Policy(stack, 'PutRecordToCacheTable', {
+        statements: [
+          new PolicyStatement({
+            actions: [
+              'dynamodb:DeleteItem',
+              'dynamodb:GetItem',
+              'dynamodb:PutItem',
+              'dynamodb:UpdateItem',
+            ],
+            resources: [props.dynamoDB.table.tableArn],
+          }),
+        ],
+      }),
+    );
   }
 }
