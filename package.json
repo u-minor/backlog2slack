@@ -26,8 +26,8 @@
   "devDependencies": {
     "@types/aws-lambda": "8.10.126",
     "@types/jest": "29.5.8",
-    "@typescript-eslint/eslint-plugin": "6.10.0",
-    "@typescript-eslint/parser": "6.10.0",
+    "@typescript-eslint/eslint-plugin": "6.11.0",
+    "@typescript-eslint/parser": "6.11.0",
     "aws-cdk": "2.106.1",
     "aws-cdk-lib": "2.106.1",
     "dotenv": "16.3.1",
