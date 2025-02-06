@@ -28,7 +28,7 @@
     "@types/jest": "29.5.14",
     "@typescript-eslint/eslint-plugin": "6.21.0",
     "@typescript-eslint/parser": "6.21.0",
-    "aws-cdk": "2.111.0",
+    "aws-cdk": "2.178.0",
     "aws-cdk-lib": "2.111.0",
     "dotenv": "16.4.7",
     "esbuild-jest": "0.5.0",
