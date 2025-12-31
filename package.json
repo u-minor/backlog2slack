@@ -21,7 +21,7 @@
     "@aws-sdk/client-dynamodb": "3.436.0",
     "@aws-sdk/util-dynamodb": "3.436.0",
     "@slack/bolt": "3.14.0",
-    "backlog-js": "0.13.1"
+    "backlog-js": "0.15.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.159",
